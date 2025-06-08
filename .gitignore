@@ -3,3 +3,5 @@ activate
 tryout.py
 myenv
 *.pyc
+.venv/
+__pycache__/

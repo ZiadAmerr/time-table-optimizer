@@ -97,7 +97,7 @@ This project plan outlines a comprehensive 15-day schedule (4 hours per day) to 
      This ensures you have a working example to test algorithms on in upcoming days.
    - Build the conflict graph or list from this data. For each exam, you can compile the set of conflicting exams by looking at all students in that exam and gathering other exams those students take. Pseudocode:
 
-     ```
+     ```python
      conflict_list = {exam: set() for exam in exams}
      for exam in exams:
          for student in exam_students[exam]:
@@ -363,7 +363,7 @@ This project plan outlines a comprehensive 15-day schedule (4 hours per day) to 
        This considers each adjacent pair in chronological order for a student. However, note that if a student has more than two exams, pairs beyond adjacent (like exam1 and exam3) also matter if their gap is small. Actually, the typical interpretation is each *pair* of exams contributes if they are within 5 slots. So a student with exams at slots [0, 3, 5] would have pairs (0,3) gap 3 -> 4 points, (0,5) gap 5 -> 1 point, (3,5) gap 2 -> 8 points. The above loop only took adjacent pairs which would miss (0,5). So instead, we should consider all pairs.
                - We can do a double loop or combinations on `slots`. For each combination of two slots for that student, if gap = d, apply penalty as above. To avoid double counting between students, we keep within each student's loop.
      - **Conflict matrix approach:** If we have the conflict matrix (where `conflict[i][j]` = number of students in both exam i and j), we can calculate penalty more globally:
-       - For every pair of exams (i,j) that conflict (meaning conflict[i][j] > 0, i < j), if they are scheduled in slots s_i and s_j, compute gap = |s_i - s_j| and add `conflict[i][j] * penalty_for_gap(gap)` to total. This essentially sums the same as iterating students, but more efficiently if the matrix is sparse.
+       - For every pair of exams (i,j) that conflict (meaning `conflict[i][j] > 0`, `i < j)`, if they are scheduled in slots $s_i$ and $s_j$, compute gap = $|s_i - s_j|$ and add `conflict[i][j] * penalty_for_gap(gap)` to total. This essentially sums the same as iterating students, but more efficiently if the matrix is sparse.
        - This is a vectorized approach if using numpy: you could loop or even use matrix operations, but double loop is fine given conflicts are usually sparse relative to total pairs.
        - To implement penalty_for_gap, maybe prepare a list or dict: `gap_penalty = {1:16, 2:8, 3:4, 4:2, 5:1}` for quick lookup, and default 0 for >=6.
    - **Choose Approach:** For clarity, the student-by-student approach is easier to implement correctly (less risk of double counting because each student’s pairs are distinct). It might be slightly less efficient if a student has many exams, but typically students have only a few exams.
@@ -736,7 +736,7 @@ This project plan outlines a comprehensive 15-day schedule (4 hours per day) to 
 3. **Optional: Explore Alternative Approaches** (if improvement approach is unsatisfactory or time remains):
    - If our heuristic solution is not reaching a good quality, consider formulating a small instance for an ILP solver to see optimal results:
      - **ILP with PuLP/OR-Tools:** Formulate binary variable x_{e,s} = 1 if exam e in slot s. Hard constraints: for each student and each pair of distinct exams (i,j) they take, x_{i,s} + x_{j,s} ≤ 1 for each slot s (ensures they’re not in same slot). Also each exam must be in exactly one slot: sum_s x_{e,s} = 1 for each exam. To limit slots, set s range or add constraint if needed.
-     - Objective: minimize ∑_{i<j} conflict[i][j] * penalty(|s_i - s_j|). But the penalty with |s_i - s_j| in objective makes it tricky for ILP because of absolute difference. You can linearize by introducing variables for distances or only consider penalty for known slot gaps (like have to multiply by those differences).
+     - Objective: minimize $\sum_{i<j} \text{conflict}[i][j] * \text{penalty}(|s_i - s_j|)$. But the penalty with $|s_i - s_j|$ in objective makes it tricky for ILP because of absolute difference. You can linearize by introducing variables for distances or only consider penalty for known slot gaps (like have to multiply by those differences).
      - This gets complicated to model exactly due to piecewise penalty. Alternatively, fix maximum slots and define for each pair of slots whether they count as 1-gap, 2-gap etc. Given the limited time, implementing ILP fully may not be feasible. But mentioning that one could use OR-Tools CP-SAT which can directly handle such scheduling with constraints (they have some scheduling API too).
      - For educational purposes, maybe implement a very small ILP (like treat penalty simpler or limit exam count) just to verify on a tiny dataset if we find a better solution than our heuristic. This can validate our approach’s effectiveness.
    - **Conclusion on alternatives:** Acknowledge that while exact methods exist, they can be slow for larger problems ([Addressing Examination Timetabling Problem Using a Partial Exams Approach in Constructive and Improvement](https://www.mdpi.com/2079-3197/8/2/46#:~:text=Examination%20timetabling%20is%20a%20type,have%20been%20proposed%20in%20scientific)), which is why we stick to heuristics. But exploring them on small cases can provide insights.
@@ -764,7 +764,7 @@ This project plan outlines a comprehensive 15-day schedule (4 hours per day) to 
 2. **Implement Additional Features (if any):** Think of any small enhancements that would make the project output more useful:
    - **Output Formatting:** Create a neat output of the final timetable. For instance, output a CSV or text like:
 
-     ```
+     ```text
      Timeslot 0: Exams [1, 5, 7]
      Timeslot 1: Exams [0, 2]
      ...
